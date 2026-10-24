@@ -284,6 +284,16 @@ $('#cfgSave').onclick = async () => {
 
 // ---------- 시작 ----------
 (function init() {
+  // 설정 링크(#setup=...)로 열면 시트 주소·비밀키를 자동으로 넣음. # 뒤는 서버로 전송되지 않음.
+  const setup = location.hash.match(/^#setup=(.+)$/);
+  if (setup) {
+    try {
+      const s = JSON.parse(decodeURIComponent(setup[1]));
+      cfg = { ...cfg, endpoint: s.endpoint || '', key: s.key || '' };
+      store.set('cfg', cfg);
+    } catch {}
+    history.replaceState(null, '', location.pathname);
+  }
   const p = new URLSearchParams(location.search);
   const shared = extractUrl(p.get('url'), p.get('text'), p.get('title'));
   if (p.has('share') || shared) {
