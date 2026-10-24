@@ -35,8 +35,9 @@
 
   <div class="step">
     <b>2. 시트 연결 넣기</b>
-    <a class="btn" id="setup" aria-disabled="true">앱에 설정 넣기</a>
-    <p id="setupHint">설치를 마친 뒤 누르면 앱이 열리면서 연결이 자동으로 들어가요.</p>
+    <a class="btn" id="copy" href="#" aria-disabled="true">설정 코드 복사</a>
+    <p id="setupHint">누른 다음 릴스 메모 앱을 열고 '복사한 설정 붙여넣기'를 눌러요.</p>
+    <a class="btn" id="setup" aria-disabled="true" style="background:transparent;color:var(--accent);border:1px solid var(--accent)">앱으로 바로 넣기 (안 되면 위 방법)</a>
   </div>
 
   <div class="step">
@@ -50,12 +51,24 @@
   // #setup=... (QR에 들어 있음)을 앱으로 넘김. # 뒤 내용은 서버로 전송되지 않음.
   const m = location.hash.match(/^#setup=(.+)$/);
   const btn = document.getElementById('setup');
+  const copy = document.getElementById('copy');
   if (m) {
     try {
       const s = JSON.parse(decodeURIComponent(m[1]));
-      const q = 'e=' + encodeURIComponent(s.endpoint) + '&k=' + encodeURIComponent(s.key);
-      btn.href = 'intent://setup?' + q + '#Intent;scheme=reelsmemo;package=com.luckwins.reelsmemo;end';
+      const code = 'reelsmemo://setup?e=' + encodeURIComponent(s.endpoint) + '&k=' + encodeURIComponent(s.key);
+      btn.href = code;
       btn.removeAttribute('aria-disabled');
+      copy.removeAttribute('aria-disabled');
+      copy.onclick = async (ev) => {
+        ev.preventDefault();
+        try { await navigator.clipboard.writeText(code); }
+        catch {
+          const ta = document.createElement('textarea');
+          ta.value = code; document.body.appendChild(ta); ta.select();
+          document.execCommand('copy'); ta.remove();
+        }
+        copy.textContent = '복사했어요 ✓ 이제 앱에서 붙여넣기';
+      };
     } catch (e) {}
   } else {
     document.getElementById('setupHint').textContent = 'PC에 있는 설정 QR로 이 페이지를 열어야 이 버튼이 켜져요.';
